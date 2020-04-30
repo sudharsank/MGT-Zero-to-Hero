@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>MGT Lap</title>
+	<script src="https://unpkg.com/@microsoft/mgt/dist/bundle/mgt-loader.js"></script>
+	<style>
+		mgt-login {
+			--font-size: 16px;
+			--font-weight: 600;
+			--height: '100%';
+			--margin: 0;
+			--padding: 12px 20px;
+			--color: #2719e9;
+			--color-hover: rgb(184, 76, 76);
+			--background-color: #e2b7d7;
+			--background-color--hover: #cac2bb;
+			--popup-content-background-color: rgb(147, 197, 216);
+			--popup-command-font-size: 14px;
+			--popup-color: #ca189e;
+		}
+
+		mgt-agenda {
+			--event-box-shadow: 0px 2px 8px #7b8a5f;
+			--event-margin: 10px 0px 5px 10px;
+			--event-padding: 0px 0px;
+			--event-background: #a34f4f;
+			--event-border: solid 2px #9ae213;
+
+			--agenda-header-margin: 40px 10px 14px 10px;
+			--agenda-header-font-size: 24px;
+			--agenda-header-color: #1234ce;
+
+			--event-time-font-size: 12px;
+			--event-time-color: #000000;
+
+			--event-subject-font-size: 19px;
+			--event-subject-color: #333333;
+
+			--event-location-font-size: 12px;
+			--event-location-color: #000000;
+		}
+
+		mgt-person {
+			--person-card-display-name-font-size: 40px;
+			--person-card-display-name-color: #ffffff;
+			--person-card-title-font-size: 20px;
+			--person-card-title-color: #ffffff;
+			--person-card-subtitle-font-size: 10px;
+			--person-card-subtitle-color: #ffffff;
+			--person-card-details-title-font-size: 10px;
+			--person-card-details-title-color: #b3bf0a;
+			--person-card-details-item-font-size: 20px;
+			--person-card-details-item-color: #3abf0a;
+			--person-card-background-color: #000000;
+		}
+
+		.team-list mgt-person {
+			--avatar-size: 72px;
+			--font-size: 24px;
+			width: 300px;
+			padding: 12px;
+			transform: rotate(-2deg);
+			transition: -webkit-transform .15s linear;
+			box-shadow: 0 3px 6px rgba(0, 0, 0, .25);
+			background-color: white;
+			margin: 8px;
+		}
+
+		.team-list mgt-person:hover {
+			-webkit-transform: scale(1.1);
+			-moz-transform: scale(1.25);
+			position: relative;
+			z-index: 5;
+			box-shadow: 0 3px 6px rgba(0, 0, 0, .5);
+		}
+
+		mgt-person.second,
+		mgt-person.fourth {
+			-webkit-transform: rotate(2deg);
+			-moz-transform: rotate(2deg);
+		}
+
+		mgt-person.first,
+		mgt-person.third {
+			-webkit-transform: rotate(-2deg);
+			-moz-transform: rotate(-2deg);
+		}
+
+		/* Don't rotate every third image, but offset its position */
+		/* mgt-person.third {
+			-webkit-transform: none;
+			-moz-transform: none;
+			position: relative;
+			top: -5px;
+		} */
+
+		/* Rotate every fifth image by 5 degrees and offset it */
+		mgt-person.fifth {
+			-webkit-transform: rotate(-5deg);
+			-moz-transform: rotate(5deg);
+			position: relative;
+			right: 5px;
+		}
+
+		.event {
+			box-shadow: 0 3.2px 7.2px 0 rgba(0, 0, 0, .132), 0 0.6px 1.8px 0 rgba(0, 0, 0, .108);
+			margin: 10px;
+		}
+
+		.event-title {
+			cursor: pointer;
+			font-size: var(--event-subject-font-size, 19px);
+		}
+
+		.event,
+		.event-title,
+		.event-subTitle,
+		.event-attendees,
+		.event-description,
+		.noData,
+		.loading {
+			padding: 5px;
+		}
+
+		.noData,
+		.loading {
+			font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>Welcome to MGT!</h1>
+	<mgt-msal-provider client-id="3712a3bd-0874-4b5c-930d-c7bf01c79733"></mgt-msal-provider>
+	<mgt-login id="myLoginControl"></mgt-login>
+	<mgt-agenda></mgt-agenda>
+	<mgt-agenda>
+		<template data-type="event">
+			<button class="eventButton">
+				<div class="event-subject">{{ event.subject }}</div>
+				<div data-for="attendee in event.attendees">
+					<mgt-person person-query="{{ attendee.emailAddress.name }}" show-name show-email>
+					</mgt-person>
+				</div>
+			</button>
+		</template>
+		<template data-type="no-data">
+			There are no events found!
+		</template>
+	</mgt-agenda>
+	<script>
+
+	</script>
+	<mgt-agenda id="customEvents">
+		<template data-type="event">
+			<div class="event">
+				<div class="event-subTitle" data-if="getDate(event.start.dateTime) == getDate(event.end.dateTime)">
+					{{formatDate(event.start.dateTime)}} from {{getTime(event.start.dateTime)}} to
+					{{getTime(event.end.dateTime)}}</div>
+				<div class="event-subTitle" data-else>
+					{{formatDate(event.start.dateTime)}} ({{getTime(event.start.dateTime)}}) -
+					{{formatDate(event.end.dateTime)}} ({{getTime(event.end.dateTime)}})
+				</div>
+				<div class="event-title" data-props="{{@click: openWebLink}}">
+					{{ event.subject }} @ {{event.location.displayName}}
+				</div>
+				<div class="event-attendees">
+					<mgt-person data-for="attendee in event.attendees" person-query="{{ attendee.emailAddress.name }}"
+						person-card="hover" />
+				</div>
+				<div class="event-description" data-props="{{innerHTML: event.body.content}}" />
+			</div>
+		</template>
+		<template data-type="no-data">
+			<p class="noData">
+				There are no events found!
+			</p>
+		</template>
+		<template data-type="loading">
+			<p class="loading">
+				Loading the events....
+			</p>
+		</template>
+	</mgt-agenda>
+	<mgt-people show-max="10"></mgt-people>
+	<mgt-person person-query="me"></mgt-person>
+	<mgt-person person-query="me" show-name show-email person-card="hover"></mgt-person>
+	<mgt-person id="myProfile" person-query="me"></mgt-person>
+	<div class="team-list">
+		<mgt-person class="first" person-query="sudharsan@o365practice.onmicrosoft.com" show-name show-email>
+		</mgt-person>
+		<mgt-person class="second" person-query="IsaiahL@o365practice.onmicrosoft.com" show-name show-email>
+		</mgt-person>
+		<mgt-person class="third" person-query="LynneR@o365practice.onmicrosoft.com" show-name show-email></mgt-person>
+		<mgt-person class="fourth" person-query="revathy@o365practice.onmicrosoft.com" show-name show-email>
+		</mgt-person>
+		<mgt-person class="fifth" person-query="prajjan@o365practice.onmicrosoft.com" show-name show-email></mgt-person>
+	</div>
+	<script type="text/javascript">
+		// let loginControl = document.getElementById('myLoginControl');
+		// loginControl.userDetails = { displayName: 'Fabio Franzini', email: 'fabio@contoso.com', profileImage: 'url' }
+
+		let person = document.getElementById('myProfile');
+		person.showName = true;
+		person.showEmail = true;
+		person['person-card'] = "hover";
+
+		const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+		document.getElementById('customEvents').templateContext = {
+			openWebLink: (e, context, root) => {
+				window.open(context.event.webLink, '_blank');
+			},
+			getDate: (dateString) => {
+				let dateObject = new Date(dateString);
+				return dateObject.setHours(0, 0, 0, 0);
+			},
+			getTime: (dateString) => {
+				let dateObject = new Date(dateString);
+				return dateObject.getHours().toString().padEnd(2, '0')
+					+ ':' + dateObject.getMinutes().toString().padEnd(2, '0');
+			},
+			formatDate: (date) => {
+				let dateObject = new Date(date);
+				return dateObject.getDate()
+					+ "/" + months[dateObject.getMonth()]
+					+ "/" + dateObject.getFullYear();
+			}
+		}	
+	</script>
+</body>
+
+</html>
